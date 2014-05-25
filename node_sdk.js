@@ -54,14 +54,17 @@ query = 'orders';
 fields = 'fields=orders.count,orders.created_month';
 
 // This script is set up to support at least one filter.
-// If youir query contains no filters, then you must comment out var filters,
+// If your query contains no filters, then you must comment out var filters,
 // and remove any reference to it throughout the script.
 filters = new Object();
 filters = {'orders.created_date':'24 months', 'users.created_date':'24 months'};
-filters = Object.keys(filters).map(function(value, index) {
+filters = filtersClean(filters)
+
+filtersClean = function filtersClean(filters){Object.keys(filters).map(function(value, index){
       return encodeURIComponent('filters[' + value + ']').toLowerCase() +
         '=' + filters[value].replace(' ', '+');
-      }).join('&');
+      }).join('&')
+};
 
 // Query Build
 
