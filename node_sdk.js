@@ -68,7 +68,7 @@ filtersClean = function filtersClean(filters){Object.keys(filters).map(function(
 
 // Query Build
 
-token = 'Mkz9GRYoIhyuJ898YG89Ig';
+token = 'nf93nfkden3ifnfDFDFD';
 secret = 'v1+MNxMg1vdmljYbtBhEDFEQSlAUEZd4xWd';
 host = 'https://demo.looker.com';
 http_verb = 'GET';
