@@ -51,7 +51,8 @@ httpGet = function httpGet(url, authorization, today, nonce) {
 
 dictionary = 'thelook';
 query = 'orders';
-fields = 'fields=orders.count,orders.created_month';
+fields = 'fields=orders.count,orders.created_month'
+limit = '1000';
 
 // This script is set up to support at least one filter.
 // If your query contains no filters, then you must comment out var filters,
@@ -60,11 +61,24 @@ filters = new Object();
 filters = {'orders.created_date':'24 months', 'users.created_date':'24 months'};
 filters = filtersClean(filters)
 
-filtersClean = function filtersClean(filters){Object.keys(filters).map(function(value, index){
-      return encodeURIComponent('filters[' + value + ']').toLowerCase() +
-        '=' + filters[value].replace(' ', '+');
-      }).join('&')
+filtersClean = function filtersClean(fil) {
+var fs = Object.keys(fil).map(function(value, index) {
+var uri = encodeURIComponent('filters[' + value + ']').toLowerCase() + '=' + fil[value].replace(' ', '+');
+console.log(value);
+console.log(index);
+console.log(uri);
+return uri;
+}).join('&');
+console.log(fs);
+return fs;
 };
+xmlHttp.onreadystatechange = function() {
+console.log("State: " + this.readyState);
+if (this.readyState == 4) {
+console.log("Complete.\nBody length: " + this.responseText.length);
+console.log("Body:\n" + this.responseText);
+
+
 
 // Query Build
 
@@ -80,7 +94,8 @@ string_to_sign = http_verb + '\n' +
     today + '\n' +
     nonce + '\n' +
     fields + '\n' +
-    filters.split('&').join('\n') + '\n';
+    filters.split('&').join('\n') + '\n'
+    limit + '\n';
 signature = hmacHash(secret, string_to_sign).toString('base64');
 authorization = token + ':' + signature;
 url = host + uri + '?' + fields + '&' + filters;
