@@ -20,6 +20,7 @@ dateFormat = require('dateformat');
 
 makeNonce = function makeNonce() {
   nonce = Math.random().toString(31).substring(2, 34)
+  console.log(nonce);
   return nonce
 }
 
@@ -28,6 +29,7 @@ makeNonce = function makeNonce() {
 hmacHash = function(secret, string_to_sign){
     crypto = require('crypto');
     hash = crypto.createHmac('sha1', secret).update(string_to_sign).digest('base64');
+    console.log(hash);
     return hash;
 }
 
@@ -36,6 +38,15 @@ hmacHash = function(secret, string_to_sign){
 httpGet = function httpGet(url, authorization, today, nonce) {
     XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
     xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function() {
+        console.log("State: " + this.readyState);
+	
+	if (this.readyState == 4) {
+		console.log("Complete.\nBody length: " + this.responseText.length);
+		console.log("Body:\n" + this.responseText);
+	}
+   }
     xmlHttp.open('GET', url, true);
     xmlHttp.setRequestHeader( 'Authorization' , authorization );
     xmlHttp.setRequestHeader( 'x-llooker-date' , today );
@@ -44,47 +55,41 @@ httpGet = function httpGet(url, authorization, today, nonce) {
     xmlHttp.setRequestHeader( 'x-llooker-api-version' , 1 );
     xmlHttp.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
     xmlHttp.send();
+    console.log(xmlHttp);
     return xmlHttp;
 }
 
 // Query Parameters
 
-dictionary = 'thelook';
-query = 'orders';
-fields = 'fields=orders.count,orders.created_month'
-limit = '1000';
+dictionary = 'model';
+query = 'base_view';
+fields = 'fields=base_view.dimension';
+limit = 'limit=5000';
 
 // This script is set up to support at least one filter.
 // If your query contains no filters, then you must comment out var filters,
 // and remove any reference to it throughout the script.
 filters = new Object();
-filters = {'orders.created_date':'24 months', 'users.created_date':'24 months'};
-filters = filtersClean(filters)
+filters = {'base_view.dimension':'filter value'};
 
 filtersClean = function filtersClean(fil) {
-var fs = Object.keys(fil).map(function(value, index) {
-var uri = encodeURIComponent('filters[' + value + ']').toLowerCase() + '=' + fil[value].replace(' ', '+');
-console.log(value);
-console.log(index);
-console.log(uri);
-return uri;
-}).join('&');
-console.log(fs);
-return fs;
+    var fs = Object.keys(fil).map(function(value, index) {
+        var uri = encodeURIComponent('filters[' + value + ']').toLowerCase() + '=' + fil[value].replace(' ', '+');
+        console.log(value);
+        console.log(index);
+        console.log(uri);
+        return uri;
+      }).join('&');
+    console.log(fs);
+    return fs;
 };
-xmlHttp.onreadystatechange = function() {
-console.log("State: " + this.readyState);
-if (this.readyState == 4) {
-console.log("Complete.\nBody length: " + this.responseText.length);
-console.log("Body:\n" + this.responseText);
 
-
-
+f = filtersClean(filters);
 // Query Build
 
-token = 'nf93nfkden3ifnfDFDFD';
-secret = 'v1+MNxMg1vdmljYbtBhEDFEQSlAUEZd4xWd';
-host = 'https://demo.looker.com';
+token = 'your token';
+secret = 'your secret';
+host = 'https://domain.looker.com';
 http_verb = 'GET';
 uri = '/api/dictionaries/' + dictionary + '/queries/' + query + '.json';
 nonce = makeNonce();
@@ -94,14 +99,14 @@ string_to_sign = http_verb + '\n' +
     today + '\n' +
     nonce + '\n' +
     fields + '\n' +
-    filters.split('&').join('\n') + '\n'
+    f.split('&').join('\n') + '\n' +
     limit + '\n';
 signature = hmacHash(secret, string_to_sign).toString('base64');
 authorization = token + ':' + signature;
-url = host + uri + '?' + fields + '&' + filters;
+url = host + uri + '?' + fields + '&' + f + '&' + limit;
+console.log(url);
 
 
 // Send GET Request
 request = httpGet(url, authorization, today, nonce);
-request.responseText
 
